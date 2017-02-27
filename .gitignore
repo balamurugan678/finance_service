@@ -1,0 +1,9 @@
+
+.gitignore
+.idea/encodings.xml
+.idea/finance_service.iml
+.idea/misc.xml
+.idea/modules.xml
+.idea/workspace.xml
+/.idea/vcs.xml
+/.idea/
