@@ -7,7 +7,7 @@ import akka.stream.ActorMaterializer
 /**
   * Created by Bala.
   */
-trait PriceController extends Directives{
+trait PriceController extends Directives {
 
   implicit val system: ActorSystem
   implicit val materializer: ActorMaterializer
