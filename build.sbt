@@ -21,7 +21,12 @@ libraryDependencies ++= {
     "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0",
     "ch.qos.logback" %  "logback-classic" % "1.1.7",
     "com.github.swagger-akka-http" %% "swagger-akka-http" % "0.7.2",
-    "co.pragmati" %% "swagger-ui-akka-http" % "1.0.0"
+    "co.pragmati" %% "swagger-ui-akka-http" % "1.0.0",
+    "com.sksamuel.elastic4s" %% "elastic4s-http" % "5.2.11",
+    "com.sksamuel.elastic4s" %% "elastic4s-tcp" % "5.2.11",
+    "com.sksamuel.elastic4s" %% "elastic4s-core" % "5.2.11",
+    "com.typesafe.akka" %% "akka-actor" % "2.4.17",
+    "com.sksamuel.elastic4s" %% "elastic4s-jackson" % "5.2.11"
   )
 
 }

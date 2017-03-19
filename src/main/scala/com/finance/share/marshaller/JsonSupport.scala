@@ -1,15 +1,13 @@
-package com.finance.share
+package com.finance.share.marshaller
 
 import java.text.SimpleDateFormat
 
 import de.heikoseeberger.akkahttpjson4s.Json4sSupport
 import org.json4s.ext.JodaTimeSerializers
-import org.json4s.{ DefaultFormats, Formats, native }
+import org.json4s.{DefaultFormats, Formats, native}
 
 /**
-  * The default Json marshaller - akka-http-spray-json could have boiler-plate code for different case classes and Json4S would avoid that.
-  * Adding custom serializers are easier as well
-  *
+  * Created by Bala.
   */
 trait JsonSupport extends Json4sSupport {
 
