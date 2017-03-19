@@ -7,7 +7,9 @@ import com.finance.share.marshaller.JsonSupport
   */
 object FinanceProtocol extends JsonSupport {
 
-  case class PortFolio(name:String, amount:Double)
+  case class PortFolio(name: String, amount: Double)
+
+  case class EnrichedPortfolio(correaltionId: String, portFolio: PortFolio, riskAmount: Double)
 
 
 }

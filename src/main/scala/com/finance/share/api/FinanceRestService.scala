@@ -4,10 +4,10 @@ import javax.ws.rs.Path
 
 import akka.actor.ActorRef
 import akka.http.scaladsl.server.Directives
-import akka.pattern.ask
+import akka.pattern.{CircuitBreaker, ask}
 import akka.util.Timeout
 import io.swagger.annotations._
-
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 
 /**
@@ -15,7 +15,7 @@ import scala.concurrent.duration._
   */
 @Path("/finance")
 @Api(value = "/finance", description = "Operations about Finance", produces = "application/json")
-class FinanceRestService(implicit financeActor: ActorRef ) extends Directives{
+class FinanceRestService(implicit financeActor: ActorRef, implicit val breaker: CircuitBreaker) extends Directives {
 
   val financeRoutes = pathPrefix("finance") {
     financeAPIPostRoute
@@ -25,9 +25,9 @@ class FinanceRestService(implicit financeActor: ActorRef ) extends Directives{
 
   import com.finance.share.domain.FinanceProtocol._
 
-  @ApiOperation(value = "Finance API service for ElasticSearch persistence", nickname = "Finance-ElasticSearch", httpMethod = "POST", consumes = "application/json", produces = "application/json")
+  @ApiOperation(value = "Finance API service for ElasticSearch persistence", nickname = "Finance-FSA", httpMethod = "POST", consumes = "application/json", produces = "application/json")
   @ApiImplicitParams(Array(
-    new ApiImplicitParam(name = "GetPortfolio", dataType = "com.finance.share.domain.FinanceProtocol$PortFolio", paramType = "body", required = true)
+    new ApiImplicitParam(name = "CreatePortfolio", dataType = "com.finance.share.domain.FinanceProtocol$PortFolio", paramType = "body", required = true)
   ))
   @ApiResponses(Array(
     new ApiResponse(code = 400, message = "Bad Request"),
@@ -37,10 +37,15 @@ class FinanceRestService(implicit financeActor: ActorRef ) extends Directives{
   def financeAPIPostRoute =
     post {
       entity(as[PortFolio]) {
-        portFolio => complete {
-          financeActor ? portFolio
-          portFolio
-        }
+        portFolio =>
+          complete {
+            breaker.withCircuitBreaker(financeActor ? portFolio)
+              .collect({
+                case enrichedPortfolio: EnrichedPortfolio => {
+                  enrichedPortfolio
+                }
+              })
+          }
       }
     }
 

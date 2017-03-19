@@ -2,7 +2,7 @@ package com.finance.share.service
 
 import akka.actor.{Actor, ActorLogging, Props}
 import akka.event.Logging
-import com.finance.share.domain.FinanceProtocol.PortFolio
+import com.finance.share.domain.FinanceProtocol.{EnrichedPortfolio, PortFolio}
 import com.sksamuel.elastic4s.ElasticDsl.{indexInto, _}
 import com.sksamuel.elastic4s.TcpClient
 import com.sksamuel.elastic4s.jackson.ElasticJackson.Implicits._
@@ -19,7 +19,7 @@ object FinanceActor {
 }
 
 
-class FinanceActor(client: TcpClient) extends Actor with ActorLogging{
+class FinanceActor(client: TcpClient) extends Actor with ActorLogging {
 
   val logger = Logging.getLogger(this)
 
@@ -29,11 +29,12 @@ class FinanceActor(client: TcpClient) extends Actor with ActorLogging{
 
   def receive: Receive = {
 
-    case portFolio:PortFolio =>
+    case portFolio: PortFolio =>
+      val enrichedPortfolio = EnrichedPortfolio("MY_Correlation_Id", portFolio, 0.005 * portFolio.amount)
       client.execute {
-        indexInto("bands" / "artists") doc(portFolio) refresh(RefreshPolicy.IMMEDIATE)
+        indexInto("finance" / "portfolio") doc (enrichedPortfolio) refresh (RefreshPolicy.IMMEDIATE)
       }
-      sender() ! "It is an actor!!"
+      sender() ! enrichedPortfolio
   }
 
 }
