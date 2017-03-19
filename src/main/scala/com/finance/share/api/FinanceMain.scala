@@ -3,6 +3,7 @@ package com.finance.share.api
 import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.Directives
+import akka.routing.FromConfig
 import akka.stream.ActorMaterializer
 import com.finance.share.service.FinanceActor
 import com.finance.share.swagger.SwaggerDocService
@@ -38,7 +39,7 @@ object FinanceMain extends App with Directives {
   val client = TcpClient.transport(ElasticsearchClientUri("localhost", 9300))
   implicit val actorSystem = ActorSystem("Finance-rest-server")
   implicit val materializer = ActorMaterializer()
-  implicit val financeActor = actorSystem.actorOf(Props(new FinanceActor(client)), name = "financeActor")
+  implicit val financeActor = actorSystem.actorOf(Props(new FinanceActor(client)).withRouter(FromConfig()), name = "financeActor")
 
   val config = ConfigFactory.load()
   val host = config.getStringList("http.host").get(0)
