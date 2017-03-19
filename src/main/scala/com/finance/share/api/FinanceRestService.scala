@@ -3,10 +3,11 @@ package com.finance.share.api
 import javax.ws.rs.Path
 
 import akka.actor.ActorRef
-import akka.http.scaladsl.server.Directives
+import akka.http.scaladsl.server.{Directives, ValidationRejection}
 import akka.pattern.{CircuitBreaker, ask}
 import akka.util.Timeout
 import io.swagger.annotations._
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 
@@ -27,7 +28,8 @@ class FinanceRestService(implicit financeActor: ActorRef, implicit val breaker: 
 
   @ApiOperation(value = "Finance API service for ElasticSearch persistence", nickname = "Finance-FSA", httpMethod = "POST", consumes = "application/json", produces = "application/json")
   @ApiImplicitParams(Array(
-    new ApiImplicitParam(name = "CreatePortfolio", dataType = "com.finance.share.domain.FinanceProtocol$PortFolio", paramType = "body", required = true)
+    new ApiImplicitParam(name = "CreatePortfolio", dataType = "com.finance.share.domain.FinanceProtocol$PortFolio", paramType = "body", required = true),
+    new ApiImplicitParam(name = "cid", dataType = "java.lang.String", paramType = "header", required = true)
   ))
   @ApiResponses(Array(
     new ApiResponse(code = 400, message = "Bad Request"),
@@ -38,15 +40,30 @@ class FinanceRestService(implicit financeActor: ActorRef, implicit val breaker: 
     post {
       entity(as[PortFolio]) {
         portFolio =>
-          complete {
-            breaker.withCircuitBreaker(financeActor ? portFolio)
-              .collect({
-                case enrichedPortfolio: EnrichedPortfolio => {
-                  enrichedPortfolio
-                }
-              })
+          FinanceRestService.extractCorrelationId { cid =>
+            complete {
+              breaker.withCircuitBreaker(financeActor ? buildPortfolioKey(cid, portFolio))
+                .collect({
+                  case enrichedPortfolio: EnrichedPortfolio => {
+                    enrichedPortfolio
+                  }
+                })
+            }
           }
       }
     }
 
+  def buildPortfolioKey(cid: String, portFolio: PortFolio): PortFolioKey = {
+    PortFolioKey(cid, portFolio)
+  }
+
+}
+
+object FinanceRestService extends Directives {
+  def extractCorrelationId = headerValueByName("cid").tflatMap[Tuple1[String]] {
+    case Tuple1(cid) =>
+      provide(cid)
+    case _ =>
+      reject(ValidationRejection("cid is not provided"))
+  }
 }
