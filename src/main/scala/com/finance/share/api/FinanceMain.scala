@@ -32,11 +32,15 @@ object FinanceMain {
 
   def main(args: Array[String]): Unit = {
     val client = TcpClient.transport(ElasticsearchClientUri("localhost", 9300))
-    implicit val actorSystem = ActorSystem("Finance-rest-server")
+
+    val config = ConfigFactory.parseString("akka.cluster.roles = [frontend]").
+      withFallback(ConfigFactory.load())
+
+    implicit val actorSystem = ActorSystem("ClusterSystem")
     implicit val materializer = ActorMaterializer()
     implicit val financeActor = actorSystem.actorOf(Props(new FinanceActor(client)).withRouter(FromConfig()), name = "financeActor")
 
-    val config = ConfigFactory.load()
+    //val config = ConfigFactory.load()
     val host = config.getStringList("http.host").get(0)
     val port = config.getIntList("http.port").get(0)
 

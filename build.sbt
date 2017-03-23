@@ -8,6 +8,7 @@ libraryDependencies ++= {
 
   val akkaHTTPVersion = "2.4.2"
   val Json4sVersion = "3.4.1"
+  val akkaVersion = "2.4.17"
 
   Seq(
     "com.typesafe.akka" %% "akka-http-experimental" % akkaHTTPVersion,
@@ -25,7 +26,11 @@ libraryDependencies ++= {
     "com.sksamuel.elastic4s" %% "elastic4s-http" % "5.2.11",
     "com.sksamuel.elastic4s" %% "elastic4s-tcp" % "5.2.11",
     "com.sksamuel.elastic4s" %% "elastic4s-core" % "5.2.11",
-    "com.typesafe.akka" %% "akka-actor" % "2.4.17",
+    "com.typesafe.akka" %% "akka-actor" % akkaVersion,
+    "com.typesafe.akka" %% "akka-remote" % akkaVersion,
+    "com.typesafe.akka" %% "akka-cluster" % akkaVersion,
+    "com.typesafe.akka" %% "akka-cluster-metrics" % akkaVersion,
+    "com.typesafe.akka" %% "akka-cluster-tools" % akkaVersion,
     "com.sksamuel.elastic4s" %% "elastic4s-jackson" % "5.2.11"
   )
 

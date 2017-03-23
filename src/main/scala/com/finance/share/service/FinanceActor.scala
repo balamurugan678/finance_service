@@ -1,6 +1,8 @@
 package com.finance.share.service
 
 import akka.actor.{Actor, ActorLogging, Props}
+import akka.cluster.Cluster
+import akka.cluster.ClusterEvent.MemberUp
 import akka.event.Logging
 import com.finance.share.domain.FinanceProtocol.{EnrichedPortfolio, PortFolio, PortFolioKey}
 import com.sksamuel.elastic4s.ElasticDsl.{indexInto, _}
@@ -22,10 +24,18 @@ object FinanceActor {
 class FinanceActor(client: TcpClient) extends Actor with ActorLogging {
 
   val logger = Logging.getLogger(this)
+  val cluster = Cluster(context.system)
 
-  override def preStart() = logger.info("The Finance Actor is ready to receive the requests")
 
-  override def postStop() = logger.info("The Finance Actor is gonna stop and would not entertain any requests")
+  override def preStart() = {
+    cluster.subscribe(self, classOf[MemberUp])
+    logger.info("The Finance Actor is ready to receive the requests")
+  }
+
+  override def postStop() = {
+    cluster.unsubscribe(self)
+    logger.info("The Finance Actor is gonna stop and would not entertain any requests")
+  }
 
   def receive: Receive = {
 
