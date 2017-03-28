@@ -3,8 +3,7 @@ package com.finance.share.handler
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.server.{Directives, ExceptionHandler}
-import akka.pattern.{AskTimeoutException, CircuitBreakerOpenException}
-import com.finance.share.domain.FinanceProtocol.{FinanceInternalException}
+import akka.pattern.CircuitBreakerOpenException
 import spray.json.DefaultJsonProtocol
 
 /**

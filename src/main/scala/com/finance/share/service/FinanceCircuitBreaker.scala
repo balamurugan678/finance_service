@@ -4,6 +4,7 @@ import akka.actor.ActorSystem
 import akka.pattern.CircuitBreaker
 import com.typesafe.config.ConfigFactory
 import com.typesafe.scalalogging.LazyLogging
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 
