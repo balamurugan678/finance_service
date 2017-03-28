@@ -22,7 +22,7 @@ class FinanceRestService(implicit financeActor: ActorRef, implicit val breaker: 
     financeAPIPostRoute
   }
 
-  implicit val timeout = Timeout(5.seconds)
+  implicit val timeout = Timeout(15.seconds)
 
   import com.finance.share.domain.FinanceProtocol._
 
@@ -42,12 +42,17 @@ class FinanceRestService(implicit financeActor: ActorRef, implicit val breaker: 
         portFolio =>
           FinanceRestService.extractCorrelationId { cid =>
             complete {
-              breaker.withCircuitBreaker(financeActor ? buildPortfolioKey(cid, portFolio))
-                .collect({
-                  case enrichedPortfolio: EnrichedPortfolio => {
-                    enrichedPortfolio
-                  }
-                })
+              val askFutureResponseFinance = breaker.withCircuitBreaker(financeActor ? buildPortfolioKey(cid, portFolio))
+              askFutureResponseFinance.collect({
+                case enrichedPortfolio: EnrichedPortfolio => {
+                  enrichedPortfolio
+                }
+              }).recover({
+                case financeInternalException: FinanceInternalException => {
+                  throw financeInternalException
+                }
+              }
+              )
             }
           }
       }

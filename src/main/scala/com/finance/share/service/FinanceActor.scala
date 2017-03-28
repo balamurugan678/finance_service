@@ -1,14 +1,19 @@
 package com.finance.share.service
 
-import akka.actor.{Actor, ActorLogging, Props}
+import akka.actor.{Actor, ActorLogging, Props, Status}
 import akka.cluster.Cluster
 import akka.cluster.ClusterEvent.MemberUp
 import akka.event.Logging
-import com.finance.share.domain.FinanceProtocol.{EnrichedPortfolio, PortFolio, PortFolioKey}
+import com.finance.share.domain.FinanceProtocol.{EnrichedPortfolio, FinanceInternalException, PortFolioKey}
 import com.sksamuel.elastic4s.ElasticDsl.{indexInto, _}
 import com.sksamuel.elastic4s.TcpClient
+import com.sksamuel.elastic4s.index.RichIndexResponse
 import com.sksamuel.elastic4s.jackson.ElasticJackson.Implicits._
 import org.elasticsearch.action.support.WriteRequest.RefreshPolicy
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+import scala.util.{Failure, Success}
 
 /**
   * Created by Bala.
@@ -39,12 +44,23 @@ class FinanceActor(client: TcpClient) extends Actor with ActorLogging {
 
   def receive: Receive = {
 
-    case portFolioKey: PortFolioKey =>
+    case portFolioKey: PortFolioKey => {
+      val senderRef = sender()
       val enrichedPortfolio = EnrichedPortfolio(portFolioKey.cid, portFolioKey.portFolio, 0.005 * portFolioKey.portFolio.amount)
-      client.execute {
+      val res: Future[RichIndexResponse] = client.execute {
         indexInto("finance" / "portfolio") doc (enrichedPortfolio) refresh (RefreshPolicy.IMMEDIATE)
       }
-      sender() ! enrichedPortfolio
+      res onComplete {
+        case Success(s) => senderRef ! enrichedPortfolio
+        case Failure(t) => {
+          val fin = FinanceInternalException("FINANCE_901","ES Couldn't get connected!!","ElasticSearch server is not responding")
+          senderRef ! Status.Failure(fin)
+        }
+
+      }
+    }
+
+
   }
 
 }

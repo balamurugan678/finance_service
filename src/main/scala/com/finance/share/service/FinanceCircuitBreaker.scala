@@ -25,9 +25,9 @@ trait FinanceCircuitBreaker extends LazyLogging {
       callTimeout = callTimeoutConfig milliseconds,
       resetTimeout = resetTimeoutConfig milliseconds
     ).
-      onOpen(logger.error(s"Aftersales circuit breaker opened! with the maximum failures $maxFailuresConfig within $callTimeoutConfig milliseconds and would stay open for $resetTimeoutConfig milliseconds")).
-      onClose(logger.error(s"Aftersales circuit breaker closed!")).
-      onHalfOpen(logger.error(s"Aftersales circuit breaker half-open and would pass the first call to the upstream server"))
+      onOpen(logger.error(s"Finance circuit breaker opened! with the maximum failures $maxFailuresConfig within $callTimeoutConfig milliseconds and would stay open for $resetTimeoutConfig milliseconds")).
+      onClose(logger.error(s"Finance circuit breaker closed!")).
+      onHalfOpen(logger.error(s"Finance circuit breaker half-open and would pass the first call to the upstream server"))
   }
 
 }
