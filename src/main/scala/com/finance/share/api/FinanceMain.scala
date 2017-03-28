@@ -5,6 +5,7 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.Directives
 import akka.routing.FromConfig
 import akka.stream.ActorMaterializer
+import com.finance.share.handler.FinanceExceptionHandler
 import com.finance.share.service.{FinanceActor, FinanceCircuitBreaker}
 import com.finance.share.swagger.SwaggerDocService
 import com.github.swagger.akka.SwaggerSite
@@ -16,7 +17,7 @@ import com.typesafe.scalalogging.LazyLogging
   * Created by Bala.
   */
 
-class FinanceMain(implicit val system: ActorSystem, implicit val materializer: ActorMaterializer, implicit val financeActor: ActorRef) extends LazyLogging with Directives with SwaggerSite with FinanceCircuitBreaker{
+class FinanceMain(implicit val system: ActorSystem, implicit val materializer: ActorMaterializer, implicit val financeActor: ActorRef) extends LazyLogging with Directives with FinanceExceptionHandler with FinanceCircuitBreaker with SwaggerSite  {
 
   def startServer(address: String, port: Int) = {
     implicit val circuitBreaker = breakerFinance(system)

@@ -13,6 +13,7 @@ object FinanceProtocol extends JsonSupport {
 
   case class EnrichedPortfolio(correaltionId: String, portFolio: PortFolio, riskAmount: Double)
 
+  case class FinanceInternalException(code: String, message: String, reason: String) extends Exception
 
 }
 
